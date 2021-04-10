@@ -1,4 +1,4 @@
-package com.ma.lessons
+package com.example.cleanarchitechture
 
 import org.junit.Test
 

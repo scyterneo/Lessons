@@ -2,7 +2,7 @@ package com.example.cleanarchitechture.domain
 
 interface OperationsUseCase {
 
-    fun getOperations() : List<Operation>
+    suspend fun getOperations() : List<Operation>
 
-    fun deleteOperation(operation: Operation)
+    suspend fun deleteOperation(operation: Operation)
 }

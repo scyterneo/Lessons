@@ -8,39 +8,40 @@
     tools:context=".presentation.ui.MainFragment">
 
     <EditText
-        android:id="@+id/input_first"
+        android:id="@+id/name_input"
         style="@style/input"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/input_second"
+        android:id="@+id/rating_input"
         style="@style/input"
+        android:inputType="numberDecimal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/input_first" />
+        app:layout_constraintTop_toBottomOf="@+id/name_input" />
 
     <Button
-        android:id="@+id/calculate_btn"
+        android:id="@+id/add_person_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/calculate_btn_text"
+        android:text="@string/add_person_btn"
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/input_second" />
+        app:layout_constraintTop_toBottomOf="@+id/rating_input" />
 
     <TextView
         android:id="@+id/state_text"
         style="@style/input"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/calculate_btn_text"
+        android:text="@string/calculate_btn"
         app:layout_constraintBottom_toTopOf="@+id/operations_list"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/calculate_btn" />
+        app:layout_constraintTop_toBottomOf="@+id/add_person_btn" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/operations_list"

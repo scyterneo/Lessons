@@ -9,7 +9,9 @@ import com.example.cleanarchitechture.domain.CalculateUseCase
 import com.example.cleanarchitechture.domain.Operation
 import com.example.cleanarchitechture.domain.OperationsUseCase
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.lang.Exception
 
 class MainViewModel : ViewModel() {
 
@@ -32,30 +34,40 @@ class MainViewModel : ViewModel() {
         _calculationState.value = CalculationState.Loading
         var result = 0
         viewModelScope.launch {
-            result = calculateUseCase.calculate(first.toInt(), second.toInt())
-            operations.value = operationsUseCase.getOperations()
+            val firstValue = try {
+                first.toInt()
+            } catch (ex: Exception) {
+                0
+            }
+            val secondValue = try {
+                second.toInt()
+            } catch (ex: Exception) {
+                0
+            }
+            result = calculateUseCase.calculate(firstValue, secondValue)
             _calculationState.value = CalculationState.Result
-            updateStatesWithDelay()
+            freeStateWithDelay()
         }
 
         return result
     }
 
-    private suspend fun updateStatesWithDelay() {
-        delay(3000)
+    private suspend fun freeStateWithDelay() {
+        delay(1000)
         _calculationState.value = CalculationState.Free
     }
 
     fun onOperationSelected(operation: Operation) {
         viewModelScope.launch {
             operationsUseCase.deleteOperation(operation)
-            operations.value = operationsUseCase.getOperations()
         }
     }
 
     init {
         viewModelScope.launch {
-            operations.value = operationsUseCase.getOperations()
+            operationsUseCase.getOperations().collect {
+                operations.value = it
+            }
         }
     }
 }

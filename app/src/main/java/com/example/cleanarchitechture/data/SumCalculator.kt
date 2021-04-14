@@ -15,7 +15,7 @@ class SumCalculator : CalculateRepository {
         println(System.currentTimeMillis())
         withContext(Dispatchers.IO) {
             // Emulating heavy calculation process
-            for (i in 0..Int.MAX_VALUE) {
+            for (i in 0..Int.MAX_VALUE / 10) {
                 if (sum % 2 == 0) sum += i
                 else sum -= i
             }

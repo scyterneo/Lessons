@@ -16,10 +16,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cleanarchitechture.R
 import com.example.cleanarchitechture.domain.Operation
+import com.example.cleanarchitechture.domain.entity.Person
 import com.example.cleanarchitechture.presentation.adapter.ItemClickListener
 import com.example.cleanarchitechture.presentation.adapter.OperationAdapter
-import com.example.cleanarchitechture.presentation.viewModel.CalculationState
-import com.example.cleanarchitechture.presentation.viewModel.MainViewModel
+import com.example.cleanarchitechture.presentation.viewmodel.CalculationState
+import com.example.cleanarchitechture.presentation.viewmodel.MainViewModel
 
 
 class MainFragment : Fragment(), ItemClickListener {
@@ -29,10 +30,10 @@ class MainFragment : Fragment(), ItemClickListener {
     }
 
     private lateinit var viewModel: MainViewModel
-    private lateinit var firstInput: EditText
-    private lateinit var secondInput: EditText
+    private lateinit var nameInput: EditText
+    private lateinit var ratingInput: EditText
     private lateinit var stateText: TextView
-    private lateinit var calculateBtn: Button
+    private lateinit var addPersonBtn: Button
     private lateinit var operations: RecyclerView
     private var adapter = OperationAdapter(listOf())
 
@@ -46,26 +47,24 @@ class MainFragment : Fragment(), ItemClickListener {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-        firstInput.doAfterTextChanged {
-            viewModel.first = it.toString()
+        nameInput.doAfterTextChanged {
+            viewModel.name = it.toString()
         }
-        secondInput.doAfterTextChanged {
-            viewModel.second = it.toString()
+        ratingInput.doAfterTextChanged {
+            viewModel.rating = it.toString()
         }
-        calculateBtn.setOnClickListener {
-            val toast =
-                Toast.makeText(requireContext(), "${viewModel.calculate()}", Toast.LENGTH_SHORT)
-            toast.show()
+        addPersonBtn.setOnClickListener {
+            viewModel.addPerson()
         }
 
-        viewModel.getOperations().observe(viewLifecycleOwner, Observer {
+        viewModel.getPersons().observe(viewLifecycleOwner, Observer {
             adapter.setData(it)
         })
 
         viewModel.calculationState.observe(viewLifecycleOwner, Observer {
             when (it) {
-                CalculationState.Free -> calculateBtn.isEnabled = true
-                else -> calculateBtn.isEnabled = false
+                CalculationState.Free -> addPersonBtn.isEnabled = true
+                else -> addPersonBtn.isEnabled = false
             }
             stateText.text = getString(
                 when (it) {
@@ -80,9 +79,9 @@ class MainFragment : Fragment(), ItemClickListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        firstInput = view.findViewById(R.id.input_first)
-        secondInput = view.findViewById(R.id.input_second)
-        calculateBtn = view.findViewById(R.id.calculate_btn)
+        nameInput = view.findViewById(R.id.name_input)
+        ratingInput = view.findViewById(R.id.rating_input)
+        addPersonBtn = view.findViewById(R.id.add_person_btn)
         operations = view.findViewById(R.id.operations_list)
         stateText = view.findViewById(R.id.state_text)
 
@@ -91,8 +90,8 @@ class MainFragment : Fragment(), ItemClickListener {
         adapter.setListener(this)
     }
 
-    override fun onItemClick(operation: Operation) {
-        viewModel.onOperationSelected(operation)
+    override fun onItemClick(person: Person) {
+        viewModel.onOperationSelected(person)
     }
 
     override fun onDestroyView() {

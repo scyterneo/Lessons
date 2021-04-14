@@ -1,4 +1,4 @@
-package com.example.cleanarchitechture.presentation.viewModel
+package com.example.cleanarchitechture.presentation.viewmodel
 
 sealed class CalculationState() {
 

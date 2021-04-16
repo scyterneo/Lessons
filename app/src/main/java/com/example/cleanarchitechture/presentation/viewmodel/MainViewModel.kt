@@ -1,28 +1,21 @@
 package com.example.cleanarchitechture.presentation.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cleanarchitechture.Dependencies
-import com.example.cleanarchitechture.domain.CalculateUseCase
-import com.example.cleanarchitechture.domain.Operation
-import com.example.cleanarchitechture.domain.OperationsUseCase
 import com.example.cleanarchitechture.domain.entity.Person
 import com.example.cleanarchitechture.domain.usecase.person.EditPersonUseCase
 import com.example.cleanarchitechture.domain.usecase.person.PersonsUseCase
+import com.example.cleanarchitechture.extensions.launch
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.lang.Exception
 
 class MainViewModel : ViewModel() {
 
-    private val calculateUseCase: CalculateUseCase by lazy { Dependencies.getCalculateUseCase() }
-    private val operationsUseCase: OperationsUseCase by lazy { Dependencies.getOperationsUseCase() }
     private val personUseCase: PersonsUseCase by lazy { Dependencies.getPersonsUseCase() }
     private val editPersonUseCase: EditPersonUseCase by lazy { Dependencies.getEditPersonUseCase() }
 
@@ -39,29 +32,6 @@ class MainViewModel : ViewModel() {
 
     val calculationState: LiveData<CalculationState> = _calculationState
 
-    fun calculate(): Int {
-        _calculationState.value = CalculationState.Loading
-        var result = 0
-        viewModelScope.launch {
-            val firstValue = try {
-                name.toInt()
-            } catch (ex: Exception) {
-                0
-            }
-            val secondValue = try {
-                rating.toInt()
-            } catch (ex: Exception) {
-                0
-            }
-            result = calculateUseCase.calculate(firstValue, secondValue)
-            val person = Person("Vasya", 21f)
-            _calculationState.value = CalculationState.Result
-            freeStateWithDelay()
-        }
-
-        return result
-    }
-
     fun addPerson() {
         val rating = try {
             this.rating.toFloat()
@@ -69,26 +39,21 @@ class MainViewModel : ViewModel() {
             0F
         }
         val person = Person(name, rating)
-        viewModelScope.launch {
+        launch {
             withContext(Dispatchers.IO) {
                 editPersonUseCase.addPerson(person)
             }
         }
     }
 
-    private suspend fun freeStateWithDelay() {
-        delay(1000)
-        _calculationState.value = CalculationState.Free
-    }
-
-    fun onOperationSelected(person: Person) {
-//        viewModelScope.launch {
-//            operationsUseCase.deleteOperation(operation)
-//        }
+    fun onPersonSelected(person: Person) {
+        launch {
+            editPersonUseCase.deletePerson(person)
+        }
     }
 
     init {
-        viewModelScope.launch {
+        launch {
             personUseCase.getPersons().collect {
                 persons.value = it
             }

@@ -6,12 +6,11 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cleanarchitechture.R
-import com.example.cleanarchitechture.domain.Operation
 import com.example.cleanarchitechture.domain.entity.Person
 
-class OperationAdapter internal constructor(
+class PersonAdapter internal constructor(
     private var data: List<Person>
-) : RecyclerView.Adapter<OperationAdapter.ViewHolder>() {
+) : RecyclerView.Adapter<PersonAdapter.ViewHolder>() {
 
     private var listener: ItemClickListener? = null
 
@@ -25,6 +24,7 @@ class OperationAdapter internal constructor(
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
         val item = data[position]
         viewHolder.name.text = item.name
+        viewHolder.rating.text = item.rating.toString()
         viewHolder.itemView.setOnClickListener {
             listener?.onItemClick(item)
         }
@@ -39,6 +39,7 @@ class OperationAdapter internal constructor(
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.name_text)
+        val rating: TextView = view.findViewById(R.id.rating_text)
     }
 
     fun setListener(itemClickListener: ItemClickListener?) {

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.example.cleanarchitechture.domain.entity.Person
 import com.example.cleanarchitechture.domain.usecase.person.PersonsRepository
+import com.example.cleanarchitechture.extensions.background
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
@@ -19,11 +20,19 @@ class LocalDatabaseSource(context: Context): PersonsRepository {
 
     private val personDao = db.personDao()
 
-    override fun addPerson(person: Person) {
-        personDao.insert(person)
+    override suspend fun addPerson(person: Person) {
+        background {
+            personDao.insert(person)
+        }
     }
 
     override fun getPersons(): Flow<List<Person>> {
         return personDao.getAll()
+    }
+
+    override suspend fun deletePerson(person: Person) {
+        background {
+            personDao.delete(person)
+        }
     }
 }

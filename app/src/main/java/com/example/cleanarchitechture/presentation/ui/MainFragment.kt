@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -15,10 +14,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cleanarchitechture.R
-import com.example.cleanarchitechture.domain.Operation
 import com.example.cleanarchitechture.domain.entity.Person
 import com.example.cleanarchitechture.presentation.adapter.ItemClickListener
-import com.example.cleanarchitechture.presentation.adapter.OperationAdapter
+import com.example.cleanarchitechture.presentation.adapter.PersonAdapter
 import com.example.cleanarchitechture.presentation.viewmodel.CalculationState
 import com.example.cleanarchitechture.presentation.viewmodel.MainViewModel
 
@@ -35,7 +33,7 @@ class MainFragment : Fragment(), ItemClickListener {
     private lateinit var stateText: TextView
     private lateinit var addPersonBtn: Button
     private lateinit var operations: RecyclerView
-    private var adapter = OperationAdapter(listOf())
+    private var adapter = PersonAdapter(listOf())
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -91,7 +89,7 @@ class MainFragment : Fragment(), ItemClickListener {
     }
 
     override fun onItemClick(person: Person) {
-        viewModel.onOperationSelected(person)
+        viewModel.onPersonSelected(person)
     }
 
     override fun onDestroyView() {

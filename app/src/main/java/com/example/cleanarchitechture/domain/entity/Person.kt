@@ -5,7 +5,6 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class Person(
-    val name: String,
-    var rating: Float,
-    @PrimaryKey(autoGenerate = true) val id: Int = 0
+    @PrimaryKey val name: String,
+    var rating: Float
 )

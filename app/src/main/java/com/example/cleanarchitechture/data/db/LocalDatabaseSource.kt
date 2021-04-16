@@ -5,11 +5,9 @@ import androidx.room.Room
 import com.example.cleanarchitechture.domain.entity.Person
 import com.example.cleanarchitechture.domain.usecase.person.PersonsRepository
 import com.example.cleanarchitechture.extensions.background
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import io.reactivex.Flowable
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.flow
 
 class LocalDatabaseSource(context: Context): PersonsRepository {
     private val db = Room.databaseBuilder(
@@ -26,8 +24,13 @@ class LocalDatabaseSource(context: Context): PersonsRepository {
         }
     }
 
+    override fun getPersonsRX(): Flowable<List<Person>> = personDao.getAllRX()
+
     override fun getPersons(): Flow<List<Person>> {
-        return personDao.getAll()
+        return flow {
+            this.emit(emptyList<Person>())
+        }
+       // return personDao.getAll()
     }
 
     override suspend fun deletePerson(person: Person) {

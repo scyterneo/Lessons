@@ -3,15 +3,14 @@ package com.example.cleanarchitechture.presentation.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.cleanarchitechture.Dependencies
 import com.example.cleanarchitechture.domain.entity.Person
 import com.example.cleanarchitechture.domain.usecase.person.EditPersonUseCase
 import com.example.cleanarchitechture.domain.usecase.person.PersonsUseCase
 import com.example.cleanarchitechture.extensions.launch
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainViewModel : ViewModel() {
@@ -53,10 +52,16 @@ class MainViewModel : ViewModel() {
     }
 
     init {
-        launch {
-            personUseCase.getPersons().collect {
+        personUseCase.getPersonsRX()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
                 persons.value = it
             }
-        }
+//        launch {
+//            personUseCase.getPersons().collect {
+//                persons.value = it
+//            }
+//        }
     }
 }

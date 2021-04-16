@@ -19,6 +19,7 @@ import com.example.cleanarchitechture.presentation.adapter.ItemClickListener
 import com.example.cleanarchitechture.presentation.adapter.PersonAdapter
 import com.example.cleanarchitechture.presentation.viewmodel.CalculationState
 import com.example.cleanarchitechture.presentation.viewmodel.MainViewModel
+import io.reactivex.disposables.CompositeDisposable
 
 
 class MainFragment : Fragment(), ItemClickListener {
@@ -34,6 +35,7 @@ class MainFragment : Fragment(), ItemClickListener {
     private lateinit var addPersonBtn: Button
     private lateinit var operations: RecyclerView
     private var adapter = PersonAdapter(listOf())
+    private val disposable: CompositeDisposable = CompositeDisposable()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -54,6 +56,14 @@ class MainFragment : Fragment(), ItemClickListener {
         addPersonBtn.setOnClickListener {
             viewModel.addPerson()
         }
+       // disposable.add(
+//            addPersonBtn.clicks()
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe {
+//                    viewModel.addPerson()
+//                }
+    //    )
 
         viewModel.getPersons().observe(viewLifecycleOwner, Observer {
             adapter.setData(it)
@@ -95,5 +105,6 @@ class MainFragment : Fragment(), ItemClickListener {
     override fun onDestroyView() {
         super.onDestroyView()
         adapter.setListener(null)
+        disposable.dispose()
     }
 }

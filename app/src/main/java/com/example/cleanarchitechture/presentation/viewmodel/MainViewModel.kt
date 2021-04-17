@@ -9,6 +9,10 @@ import com.example.cleanarchitechture.domain.entity.Person
 import com.example.cleanarchitechture.domain.usecase.person.EditPersonUseCase
 import com.example.cleanarchitechture.domain.usecase.person.PersonsUseCase
 import com.example.cleanarchitechture.extensions.launch
+import io.reactivex.Scheduler
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -23,6 +27,7 @@ class MainViewModel : ViewModel() {
     var rating: String = ""
 
     private var persons = MutableLiveData<List<Person>>(listOf())
+    private val disposable = CompositeDisposable()
 
     fun getPersons(): LiveData<List<Person>> {
         return persons
@@ -53,10 +58,23 @@ class MainViewModel : ViewModel() {
     }
 
     init {
-        launch {
-            personUseCase.getPersons().collect {
+//        launch {
+//            personUseCase.getPersons().collect {
+//                persons.value = it
+//            }
+//        }
+
+        val subscribe = personUseCase.getPersonsRX()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
                 persons.value = it
             }
-        }
+        disposable.add(subscribe)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        disposable.dispose()
     }
 }

@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.example.cleanarchitechture.domain.entity.Person
 import com.example.cleanarchitechture.domain.usecase.person.PersonsRepository
 import com.example.cleanarchitechture.extensions.background
+import io.reactivex.Flowable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.Flow
@@ -28,6 +29,10 @@ class LocalDatabaseSource(context: Context): PersonsRepository {
 
     override fun getPersons(): Flow<List<Person>> {
         return personDao.getAll()
+    }
+
+    override fun getPersonsRX(): Flowable<List<Person>> {
+        return personDao.getAllRX()
     }
 
     override suspend fun deletePerson(person: Person) {

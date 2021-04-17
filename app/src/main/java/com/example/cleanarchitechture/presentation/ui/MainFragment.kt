@@ -19,6 +19,10 @@ import com.example.cleanarchitechture.presentation.adapter.ItemClickListener
 import com.example.cleanarchitechture.presentation.adapter.PersonAdapter
 import com.example.cleanarchitechture.presentation.viewmodel.CalculationState
 import com.example.cleanarchitechture.presentation.viewmodel.MainViewModel
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 
 
 class MainFragment : Fragment(), ItemClickListener {
@@ -34,6 +38,8 @@ class MainFragment : Fragment(), ItemClickListener {
     private lateinit var addPersonBtn: Button
     private lateinit var operations: RecyclerView
     private var adapter = PersonAdapter(listOf())
+
+    private val disposable: CompositeDisposable = CompositeDisposable()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,9 +57,17 @@ class MainFragment : Fragment(), ItemClickListener {
         ratingInput.doAfterTextChanged {
             viewModel.rating = it.toString()
         }
-        addPersonBtn.setOnClickListener {
-            viewModel.addPerson()
+
+        val observable = Observable.create<Unit> { emitter ->
+            addPersonBtn.setOnClickListener {
+                emitter.onNext(Unit)
+            }
         }
+        val subscribe = observable
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { viewModel.addPerson() }
+        disposable.add(subscribe)
 
         viewModel.getPersons().observe(viewLifecycleOwner, Observer {
             adapter.setData(it)

@@ -1,5 +1,6 @@
 package com.example.cleanarchitechture.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -27,11 +28,16 @@ class MainViewModel : ViewModel() {
     var rating: String = ""
 
     private var persons = MutableLiveData<List<Person>>(listOf())
-    private val disposable = CompositeDisposable()
-
     fun getPersons(): LiveData<List<Person>> {
         return persons
     }
+
+    private var topPersons = MutableLiveData<List<Person>>(listOf())
+    fun getTopPersons(): LiveData<List<Person>> {
+        return topPersons
+    }
+
+    private val disposable = CompositeDisposable()
 
     private var _calculationState = MutableLiveData<CalculationState>(CalculationState.Free)
 
@@ -70,7 +76,27 @@ class MainViewModel : ViewModel() {
             .subscribe {
                 persons.value = it
             }
+
+        val subscribeTop = personUseCase.getPersonsRX()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnNext {
+                Log.d("MainViewModel", Thread.currentThread().name)
+            }
+            .observeOn(Schedulers.io())
+            .map { persons ->
+                Log.d("MainViewModel", Thread.currentThread().name)
+                val sortedPersons = persons.sortedBy { it.rating }
+                val middleRating = sortedPersons[sortedPersons.size / 2].rating
+                sortedPersons.filter { it.rating >= middleRating }
+            }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                Log.d("MainViewModel", Thread.currentThread().name)
+                topPersons.value = it
+            }
         disposable.add(subscribe)
+        disposable.add(subscribeTop)
     }
 
     override fun onCleared() {

@@ -36,8 +36,10 @@ class MainFragment : Fragment(), ItemClickListener {
     private lateinit var ratingInput: EditText
     private lateinit var stateText: TextView
     private lateinit var addPersonBtn: Button
-    private lateinit var operations: RecyclerView
-    private var adapter = PersonAdapter(listOf())
+    private lateinit var personsList: RecyclerView
+    private var allPersonsAdapter = PersonAdapter(listOf())
+    private lateinit var topPersonsList: RecyclerView
+    private var topPersonsAdapter = PersonAdapter(listOf())
 
     private val disposable: CompositeDisposable = CompositeDisposable()
 
@@ -69,11 +71,15 @@ class MainFragment : Fragment(), ItemClickListener {
             .subscribe { viewModel.addPerson() }
         disposable.add(subscribe)
 
-        viewModel.getPersons().observe(viewLifecycleOwner, Observer {
-            adapter.setData(it)
+        viewModel.getPersons().observe(viewLifecycleOwner, {
+            allPersonsAdapter.setData(it)
         })
 
-        viewModel.calculationState.observe(viewLifecycleOwner, Observer {
+        viewModel.getTopPersons().observe(viewLifecycleOwner, Observer {
+            topPersonsAdapter.setData(it)
+        })
+
+        viewModel.calculationState.observe(viewLifecycleOwner, {
             when (it) {
                 CalculationState.Free -> addPersonBtn.isEnabled = true
                 else -> addPersonBtn.isEnabled = false
@@ -94,12 +100,17 @@ class MainFragment : Fragment(), ItemClickListener {
         nameInput = view.findViewById(R.id.name_input)
         ratingInput = view.findViewById(R.id.rating_input)
         addPersonBtn = view.findViewById(R.id.add_person_btn)
-        operations = view.findViewById(R.id.operations_list)
+        personsList = view.findViewById(R.id.persons_list)
+        topPersonsList = view.findViewById(R.id.top_rating_persons_list)
         stateText = view.findViewById(R.id.state_text)
 
-        operations.layoutManager = LinearLayoutManager(requireContext())
-        operations.adapter = adapter
-        adapter.setListener(this)
+        personsList.layoutManager = LinearLayoutManager(requireContext())
+        personsList.adapter = allPersonsAdapter
+        allPersonsAdapter.setListener(this)
+
+        topPersonsList.layoutManager = LinearLayoutManager(requireContext())
+        topPersonsList.adapter = topPersonsAdapter
+       // topPersonsAdapter.setListener(this)
     }
 
     override fun onItemClick(person: Person) {
@@ -108,6 +119,6 @@ class MainFragment : Fragment(), ItemClickListener {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        adapter.setListener(null)
+        allPersonsAdapter.setListener(null)
     }
 }

@@ -87,7 +87,11 @@ class MainViewModel : ViewModel() {
             .map { persons ->
                 Log.d("MainViewModel", Thread.currentThread().name)
                 val sortedPersons = persons.sortedBy { it.rating }
-                val middleRating = sortedPersons[sortedPersons.size / 2].rating
+                val middleRating = try {
+                    sortedPersons[sortedPersons.size / 2].rating
+                } catch (exception: Exception) {
+                    0F
+                }
                 sortedPersons.filter { it.rating >= middleRating }
             }
             .observeOn(AndroidSchedulers.mainThread())

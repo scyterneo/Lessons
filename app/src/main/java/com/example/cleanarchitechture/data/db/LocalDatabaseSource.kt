@@ -32,7 +32,7 @@ class LocalDatabaseSource(context: Context): PersonsRepository {
     }
 
     override fun getPersonsRX(): Flowable<List<Person>> {
-        return personDao.getAllRX()
+        return personDao.getAllRX().share()
     }
 
     override suspend fun deletePerson(person: Person) {

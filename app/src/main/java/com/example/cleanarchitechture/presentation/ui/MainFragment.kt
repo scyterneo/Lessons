@@ -37,9 +37,9 @@ class MainFragment : Fragment(), ItemClickListener {
     private lateinit var stateText: TextView
     private lateinit var addPersonBtn: Button
     private lateinit var personsList: RecyclerView
-    private var allPersonsAdapter = PersonAdapter(listOf())
+    private var allPersonsAdapter = PersonAdapter()
     private lateinit var topPersonsList: RecyclerView
-    private var topPersonsAdapter = PersonAdapter(listOf())
+    private var topPersonsAdapter = PersonAdapter()
 
     private val disposable: CompositeDisposable = CompositeDisposable()
 

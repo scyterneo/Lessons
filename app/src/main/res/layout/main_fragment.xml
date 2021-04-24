@@ -39,20 +39,28 @@
         android:layout_height="wrap_content"
         android:text="@string/calculate_btn"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/persons_list"
+        app:layout_constraintBottom_toTopOf="@+id/refresher"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/add_person_btn" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/persons_list"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/refresher"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="@dimen/padding"
         app:layout_constraintBottom_toTopOf="@id/divider"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/state_text" />
+        app:layout_constraintTop_toBottomOf="@+id/state_text"
+        >
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/persons_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="@dimen/padding"
+            />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <View
         android:id="@+id/divider"
@@ -63,7 +71,7 @@
         app:layout_constraintBottom_toTopOf="@id/top_rating_persons_list"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/persons_list" />
+        app:layout_constraintTop_toBottomOf="@+id/refresher" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/top_rating_persons_list"

@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -77,6 +78,10 @@ class MainFragment : Fragment(), ItemClickListener {
 
         viewModel.getTopPersons().observe(viewLifecycleOwner, Observer {
             topPersonsAdapter.setData(it)
+        })
+
+        viewModel.getError().observe(viewLifecycleOwner, Observer {
+            Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
         })
 
         viewModel.calculationState.observe(viewLifecycleOwner, {

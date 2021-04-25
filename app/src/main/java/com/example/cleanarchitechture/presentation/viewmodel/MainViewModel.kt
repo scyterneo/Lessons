@@ -10,6 +10,7 @@ import com.example.cleanarchitechture.domain.usecase.person.EditPersonUseCase
 import com.example.cleanarchitechture.domain.usecase.person.PersonsUseCase
 import com.example.cleanarchitechture.extensions.launch
 import io.reactivex.disposables.CompositeDisposable
+import kotlinx.coroutines.flow.collect
 
 class MainViewModel : ViewModel() {
 
@@ -24,12 +25,7 @@ class MainViewModel : ViewModel() {
         return persons
     }
 
-    private val topPersons = MutableLiveData<List<Person>>(listOf())
-    fun getTopPersons(): LiveData<List<Person>> {
-        return topPersons
-    }
-
-    private val error = MutableLiveData<String>()
+    private var error = MutableLiveData<String>()
     fun getError(): LiveData<String> = error
 
     private val personDataReady = MutableLiveData<Pair<String, Float>>()
@@ -37,13 +33,13 @@ class MainViewModel : ViewModel() {
 
     private val disposable = CompositeDisposable()
 
-    private var _calculationState = MutableLiveData<CalculationState>(CalculationState.Free)
-
-    val calculationState: LiveData<CalculationState> = _calculationState
-
-
     init {
         updatePersons()
+        launch {
+            personUseCase.observePersons().collect {
+                persons.value = it
+            }
+        }
     }
 
     fun addPerson() {
@@ -77,8 +73,8 @@ class MainViewModel : ViewModel() {
 
     fun updatePersons() {
         launch {
-            processNetworkResult(personUseCase.getPersons()) {
-                persons.value = it
+            personUseCase.getPersons()?.exception?.message?.let {
+                error.value = it
             }
         }
     }

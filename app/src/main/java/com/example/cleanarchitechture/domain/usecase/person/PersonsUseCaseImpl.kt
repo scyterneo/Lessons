@@ -23,7 +23,13 @@ class PersonsUseCaseImpl(
         personsRepository.deletePerson(person)
     }
 
-    override suspend fun getPersons(): NetworkResult<List<Person>> {
-        return personsCloudRepository.getPersons()
+    override suspend fun getPersons(): NetworkResult.Error<List<Person>>? {
+        when(val getPersonsResult = personsCloudRepository.getPersons()) {
+            is NetworkResult.Error -> return getPersonsResult
+            is NetworkResult.Success -> {
+                personsRepository.updatePersons(getPersonsResult.data)
+            }
+        }
+        return null
     }
 }

@@ -43,12 +43,9 @@ class MainFragment : Fragment(), ItemClickListener {
     private lateinit var viewModel: MainViewModel
     private lateinit var nameInput: EditText
     private lateinit var ratingInput: EditText
-    private lateinit var stateText: TextView
     private lateinit var addPersonBtn: Button
     private lateinit var personsList: RecyclerView
     private var allPersonsAdapter = PersonAdapter()
-    private lateinit var topPersonsList: RecyclerView
-    private var topPersonsAdapter = PersonAdapter()
 
     private lateinit var refresher: SwipeRefreshLayout
 
@@ -110,10 +107,6 @@ class MainFragment : Fragment(), ItemClickListener {
             refresher.isRefreshing = false
         })
 
-        viewModel.getTopPersons().observe(viewLifecycleOwner, Observer {
-            topPersonsAdapter.setData(it)
-        })
-
         viewModel.getError().observe(viewLifecycleOwner, Observer {
             Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
         })
@@ -127,19 +120,6 @@ class MainFragment : Fragment(), ItemClickListener {
             requireActivity().startService(addPersonServiceIntent)
         })
 
-        viewModel.calculationState.observe(viewLifecycleOwner, {
-            when (it) {
-                CalculationState.Free -> addPersonBtn.isEnabled = true
-                else -> addPersonBtn.isEnabled = false
-            }
-            stateText.text = getString(
-                when (it) {
-                    CalculationState.Free -> R.string.state_free
-                    CalculationState.Loading -> R.string.state_calculating
-                    CalculationState.Result -> R.string.state_result
-                }
-            )
-        })
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -149,15 +129,10 @@ class MainFragment : Fragment(), ItemClickListener {
         ratingInput = view.findViewById(R.id.rating_input)
         addPersonBtn = view.findViewById(R.id.add_person_btn)
         personsList = view.findViewById(R.id.persons_list)
-        topPersonsList = view.findViewById(R.id.top_rating_persons_list)
-        stateText = view.findViewById(R.id.state_text)
 
         personsList.layoutManager = LinearLayoutManager(requireContext())
         personsList.adapter = allPersonsAdapter
         allPersonsAdapter.setListener(this)
-
-        topPersonsList.layoutManager = LinearLayoutManager(requireContext())
-        topPersonsList.adapter = topPersonsAdapter
 
         refresher = view.findViewById(R.id.refresher)
     }

@@ -27,6 +27,12 @@ class LocalDatabaseSource(context: Context): PersonsRepository {
         }
     }
 
+    override suspend fun addPersons(persons: List<Person>) {
+        background {
+            personDao.insertAll(persons)
+        }
+    }
+
     override fun getPersons(): Flow<List<Person>> {
         return personDao.getAll()
     }
@@ -38,6 +44,18 @@ class LocalDatabaseSource(context: Context): PersonsRepository {
     override suspend fun deletePerson(person: Person) {
         background {
             personDao.delete(person)
+        }
+    }
+
+    override suspend fun deleteAll() {
+        background {
+            personDao.deleteAll()
+        }
+    }
+
+    override suspend fun updatePersons(persons: List<Person>) {
+        background {
+            personDao.updatePersons(persons)
         }
     }
 }

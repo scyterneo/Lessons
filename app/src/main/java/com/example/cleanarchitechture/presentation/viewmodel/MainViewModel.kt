@@ -19,18 +19,21 @@ class MainViewModel : ViewModel() {
     var name: String = ""
     var rating: String = ""
 
-    private var persons = MutableLiveData<List<Person>>(listOf())
+    private val persons = MutableLiveData<List<Person>>(listOf())
     fun getPersons(): LiveData<List<Person>> {
         return persons
     }
 
-    private var topPersons = MutableLiveData<List<Person>>(listOf())
+    private val topPersons = MutableLiveData<List<Person>>(listOf())
     fun getTopPersons(): LiveData<List<Person>> {
         return topPersons
     }
 
-    private var error = MutableLiveData<String>()
+    private val error = MutableLiveData<String>()
     fun getError(): LiveData<String> = error
+
+    private val personDataReady = MutableLiveData<Pair<String, Float>>()
+    fun getPersonDataReady(): LiveData<Pair<String, Float>> = personDataReady
 
     private val disposable = CompositeDisposable()
 
@@ -49,12 +52,7 @@ class MainViewModel : ViewModel() {
         } catch (exception: Exception) {
             0F
         }
-        val person = Person(name, rating)
-        launch {
-            processNetworkResult(editPersonUseCase.addPerson(person)) {
-                updatePersons()
-            }
-        }
+        personDataReady.value = name to rating
     }
 
     fun onPersonSelected(person: Person) {
@@ -77,50 +75,13 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    private fun updatePersons() {
+    fun updatePersons() {
         launch {
             processNetworkResult(personUseCase.getPersons()) {
                 persons.value = it
             }
         }
     }
-
-/*
- init {
-
-
-        val subscribe = personUseCase.getPersonsRX()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                persons.value = it
-            }
-
-        val subscribeTop = personUseCase.getPersonsRX()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnNext {
-                Log.d("MainViewModel", Thread.currentThread().name)
-            }
-            .observeOn(Schedulers.io())
-            .map { persons ->
-                Log.d("MainViewModel", Thread.currentThread().name)
-                val sortedPersons = persons.sortedBy { it.rating }
-                val middleRating = try {
-                    sortedPersons[sortedPersons.size / 2].rating
-                } catch (exception: Exception) {
-                    0F
-                }
-                sortedPersons.filter { it.rating >= middleRating }
-            }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                Log.d("MainViewModel", Thread.currentThread().name)
-                topPersons.value = it
-            }
-        disposable.add(subscribe)
-        disposable.add(subscribeTop)
-  }*/
 
     override fun onCleared() {
         super.onCleared()

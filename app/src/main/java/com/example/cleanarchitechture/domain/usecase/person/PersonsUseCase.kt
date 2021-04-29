@@ -8,5 +8,5 @@ import kotlinx.coroutines.flow.Flow
 interface PersonsUseCase {
     fun observePersons(): Flow<List<Person>>
     fun getPersonsRX(): Flowable<List<Person>>
-    suspend fun getPersons(): NetworkResult<List<Person>>
+    suspend fun getPersons(): NetworkResult.Error<List<Person>>?
 }

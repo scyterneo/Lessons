@@ -3,6 +3,7 @@ package com.example.cleanarchitechture.domain.usecase.person
 import com.example.cleanarchitechture.data.cloud.NetworkResult
 import com.example.cleanarchitechture.domain.entity.Person
 import io.reactivex.Flowable
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 
 class PersonsUseCaseImpl(
@@ -16,6 +17,7 @@ class PersonsUseCaseImpl(
         personsRepository.getPersonsRX()
 
     override suspend fun addPerson(person: Person): NetworkResult<Person> {
+        delay(3000)
         return personsCloudRepository.addPerson(person)
     }
 
@@ -27,6 +29,7 @@ class PersonsUseCaseImpl(
         when(val getPersonsResult = personsCloudRepository.getPersons()) {
             is NetworkResult.Error -> return getPersonsResult
             is NetworkResult.Success -> {
+                delay(3000)
                 personsRepository.updatePersons(getPersonsResult.data)
             }
         }

@@ -1,18 +1,17 @@
 package com.example.cleanarchitechture.presentation.ui
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.os.BatteryManager
 import android.os.Bundle
+import android.os.IBinder
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
+import androidx.core.app.JobIntentService
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -22,16 +21,17 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.cleanarchitechture.R
 import com.example.cleanarchitechture.domain.entity.Person
-import com.example.cleanarchitechture.presentation.AddPersonService
+import com.example.cleanarchitechture.presentation.service.AddPersonService
 import com.example.cleanarchitechture.presentation.Constants
 import com.example.cleanarchitechture.presentation.adapter.ItemClickListener
 import com.example.cleanarchitechture.presentation.adapter.PersonAdapter
-import com.example.cleanarchitechture.presentation.viewmodel.CalculationState
+import com.example.cleanarchitechture.presentation.service.GetPersonsService
 import com.example.cleanarchitechture.presentation.viewmodel.MainViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.flow.collect
 
 
 class MainFragment : Fragment(), ItemClickListener {
@@ -51,9 +51,35 @@ class MainFragment : Fragment(), ItemClickListener {
 
     private val disposable: CompositeDisposable = CompositeDisposable()
 
+    private var addPersonService: AddPersonService? = null
+    private var boundToAddPersonService: Boolean = false
+    private var newPersonData: Pair<String, Float>? = null
+
+    /** Defines callbacks for service binding, passed to bindService()  */
+    private val connection = object : ServiceConnection {
+
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            val binder = service as AddPersonService.LocalBinder
+            addPersonService = binder.getService()
+            boundToAddPersonService = true
+            newPersonData?.let {
+                startAddPersonProcess(it.first, it.second)
+            }
+            newPersonData = null
+            Log.d("AddPerson", "onServiceConnected")
+        }
+
+        override fun onServiceDisconnected(arg0: ComponentName) {
+            addPersonService = null
+            boundToAddPersonService = false
+            Log.d("AddPerson", "onServiceDisconnected")
+        }
+    }
+
     private val batteryLeverBroadcastReceiver: BatteryLeverBroadcastReceiver by lazy {
         BatteryLeverBroadcastReceiver()
     }
+    private val personAddedReceiver = PersonAddedReceiver()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -62,20 +88,23 @@ class MainFragment : Fragment(), ItemClickListener {
         return inflater.inflate(R.layout.main_fragment, container, false)
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onStart() {
+        super.onStart()
 
+        requireContext().registerReceiver(
+            personAddedReceiver,
+            IntentFilter(Constants.PERSON_ADDED_BROADCAST)
+        )
         requireContext().registerReceiver(
             batteryLeverBroadcastReceiver,
             IntentFilter(Intent.ACTION_BATTERY_CHANGED)
         )
     }
 
-    override fun onPause() {
-        super.onPause()
-        requireActivity().unregisterReceiver(
-            batteryLeverBroadcastReceiver
-        )
+    override fun onStop() {
+        super.onStop()
+        requireActivity().unregisterReceiver(personAddedReceiver)
+        requireActivity().unregisterReceiver(batteryLeverBroadcastReceiver)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -107,19 +136,31 @@ class MainFragment : Fragment(), ItemClickListener {
             refresher.isRefreshing = false
         })
 
-        viewModel.getError().observe(viewLifecycleOwner, Observer {
+        viewModel.getError().observe(viewLifecycleOwner, {
             Toast.makeText(requireContext(), it, Toast.LENGTH_LONG).show()
         })
 
-        viewModel.getPersonDataReady().observe(viewLifecycleOwner, Observer {
+        viewModel.getPersonDataReady().observe(viewLifecycleOwner, {
+            startAddPersonProcess(it.first, it.second)
+        })
+    }
+
+    private fun startAddPersonProcess(name: String, rating: Float) {
+        if (boundToAddPersonService) {
+            addPersonService?.startAddPersonProcess(name, rating)
+        } else {
             val addPersonServiceIntent =
                 Intent(requireContext(), AddPersonService::class.java).apply {
-                    this.putExtra(Constants.NAME, it.first)
-                    this.putExtra(Constants.RATING, it.second)
+                    this.putExtra(Constants.NAME, name)
+                    this.putExtra(Constants.RATING, rating)
                 }
-            requireActivity().startService(addPersonServiceIntent)
-        })
-
+            requireActivity().bindService(
+                addPersonServiceIntent,
+                connection,
+                Context.BIND_AUTO_CREATE
+            )
+            newPersonData = Pair(name, rating)
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -144,12 +185,32 @@ class MainFragment : Fragment(), ItemClickListener {
     override fun onDestroyView() {
         super.onDestroyView()
         allPersonsAdapter.setListener(null)
+        requireContext().unbindService(connection)
     }
 
     inner class BatteryLeverBroadcastReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val level: Int = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
             ratingInput.setText(level.toString())
+        }
+    }
+
+    class PersonAddedReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            Log.d("AddPerson", "PersonAddedReceiver onReceive")
+            val actionRequired = intent?.getBooleanExtra(Constants.ACTION_REQUIRED, false) ?: false
+            if (actionRequired && context != null) {
+                Intent(context, GetPersonsService::class.java).also {
+                    it.putExtra(Constants.ACTION_REQUIRED, true)
+
+                    JobIntentService.enqueueWork(
+                        context,
+                        GetPersonsService::class.java,
+                        Constants.GET_PERSONS_JOB_ID,
+                        it
+                    )
+                }
+            }
         }
     }
 }

@@ -14,7 +14,6 @@ import android.widget.Toast
 import androidx.core.app.JobIntentService
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -22,7 +21,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.cleanarchitechture.R
 import com.example.cleanarchitechture.domain.entity.Person
 import com.example.cleanarchitechture.presentation.service.AddPersonService
-import com.example.cleanarchitechture.presentation.Constants
+import com.example.cleanarchitechture.Constants
 import com.example.cleanarchitechture.presentation.adapter.ItemClickListener
 import com.example.cleanarchitechture.presentation.adapter.PersonAdapter
 import com.example.cleanarchitechture.presentation.service.GetPersonsService
@@ -31,7 +30,6 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
-import kotlinx.coroutines.flow.collect
 
 
 class MainFragment : Fragment(), ItemClickListener {
@@ -185,7 +183,6 @@ class MainFragment : Fragment(), ItemClickListener {
     override fun onDestroyView() {
         super.onDestroyView()
         allPersonsAdapter.setListener(null)
-        requireContext().unbindService(connection)
     }
 
     inner class BatteryLeverBroadcastReceiver : BroadcastReceiver() {

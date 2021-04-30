@@ -11,6 +11,9 @@ class PersonsUseCaseImpl(
     private val personsCloudRepository: PersonsCloudRepository
 ) : PersonsUseCase, EditPersonUseCase {
     override fun observePersons(): Flow<List<Person>> =
+        personsRepository.observePersons()
+
+    override suspend fun getLocalPersons(): List<Person> =
         personsRepository.getPersons()
 
     override fun getPersonsRX(): Flowable<List<Person>> =

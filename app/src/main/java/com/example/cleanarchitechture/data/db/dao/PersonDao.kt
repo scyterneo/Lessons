@@ -10,10 +10,13 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface PersonDao {
     @Query("SELECT * FROM Person")
-    fun getAll(): Flow<List<Person>>
+    fun observeAll(): Flow<List<Person>>
 
     @Query("SELECT * FROM Person")
     fun getAllRX(): Flowable<List<Person>>
+
+    @Query("SELECT * FROM Person")
+    fun getAll(): List<Person>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(person: Person)

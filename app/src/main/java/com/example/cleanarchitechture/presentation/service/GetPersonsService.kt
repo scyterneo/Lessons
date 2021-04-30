@@ -11,7 +11,7 @@ import androidx.core.app.JobIntentService
 import androidx.core.app.NotificationCompat
 import com.example.cleanarchitechture.Dependencies
 import com.example.cleanarchitechture.R
-import com.example.cleanarchitechture.presentation.Constants
+import com.example.cleanarchitechture.Constants
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job

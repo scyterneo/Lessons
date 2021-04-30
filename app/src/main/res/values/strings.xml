@@ -7,4 +7,7 @@
     <string name="state_result">Result</string>
 
     <string name="add_person_btn">Add person</string>
+
+    <string name="persons_widget_label">Persons Widget</string>
+    <string name="min_rating">Min rating</string>
 </resources>

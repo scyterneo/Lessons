@@ -5,12 +5,11 @@ import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
 import android.util.Log
-import androidx.core.app.JobIntentService
 import com.example.cleanarchitechture.Dependencies
 import com.example.cleanarchitechture.data.cloud.NetworkResult
 import com.example.cleanarchitechture.domain.entity.Person
 import com.example.cleanarchitechture.domain.usecase.person.EditPersonUseCase
-import com.example.cleanarchitechture.presentation.Constants
+import com.example.cleanarchitechture.Constants
 import kotlinx.coroutines.*
 
 

@@ -24,6 +24,7 @@ class MainViewModel : ViewModel() {
 
     private val personUseCase: PersonsUseCase by lazy { Dependencies.getPersonsUseCase() }
     private val editPersonUseCase: EditPersonUseCase by lazy { Dependencies.getEditPersonUseCase() }
+    private val workUseCase by lazy { Dependencies.getWorkUseCase()}
 
     var name: String = ""
     var rating: String = ""
@@ -57,15 +58,7 @@ class MainViewModel : ViewModel() {
             0F
         }
 
-        val addPersonWorkRequest = OneTimeWorkRequestBuilder<AddPersonWorker>()
-            .setInputData(workDataOf(Constants.NAME to name, Constants.RATING to rating))
-            .build()
-        val getPersonsWorkRequest = OneTimeWorkRequestBuilder<GetPersonsWorker>()
-            .build()
-        WorkManager.getInstance()
-            .beginUniqueWork("AddPerson",  ExistingWorkPolicy.REPLACE, addPersonWorkRequest)
-            .then(getPersonsWorkRequest)
-            .enqueue()
+       workUseCase.addPerson(name, rating)
 
        // personDataReady.value = name to rating
     }

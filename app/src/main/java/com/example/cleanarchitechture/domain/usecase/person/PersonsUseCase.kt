@@ -9,5 +9,5 @@ interface PersonsUseCase {
     fun observePersons(): Flow<List<Person>>
     suspend fun getLocalPersons(): List<Person>
     fun getPersonsRX(): Flowable<List<Person>>
-    suspend fun getPersons(): NetworkResult.Error<List<Person>>?
+    suspend fun getPersons(): Throwable?
 }

@@ -20,7 +20,6 @@ class PersonsUseCaseImpl(
         personsRepository.getPersonsRX()
 
     override suspend fun addPerson(person: Person): NetworkResult<Person> {
-        delay(3000)
         return personsCloudRepository.addPerson(person)
     }
 
@@ -28,11 +27,11 @@ class PersonsUseCaseImpl(
         personsRepository.deletePerson(person)
     }
 
-    override suspend fun getPersons(): NetworkResult.Error<List<Person>>? {
+    override suspend fun getPersons(): Throwable? {
+        delay(1000)
         when(val getPersonsResult = personsCloudRepository.getPersons()) {
-            is NetworkResult.Error -> return getPersonsResult
+            is NetworkResult.Error -> return getPersonsResult.exception
             is NetworkResult.Success -> {
-                delay(3000)
                 personsRepository.updatePersons(getPersonsResult.data)
             }
         }

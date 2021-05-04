@@ -3,14 +3,18 @@ package com.example.cleanarchitechture.presentation.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import androidx.work.workDataOf
+import com.example.cleanarchitechture.Constants
 import com.example.cleanarchitechture.Dependencies
 import com.example.cleanarchitechture.data.cloud.NetworkResult
 import com.example.cleanarchitechture.domain.entity.Person
 import com.example.cleanarchitechture.domain.usecase.person.EditPersonUseCase
 import com.example.cleanarchitechture.domain.usecase.person.PersonsUseCase
 import com.example.cleanarchitechture.extensions.launch
+import com.example.cleanarchitechture.presentation.worker.AddPersonWorker
 import com.example.cleanarchitechture.presentation.worker.GetPersonsWorker
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.flow.collect
@@ -52,7 +56,18 @@ class MainViewModel : ViewModel() {
         } catch (exception: Exception) {
             0F
         }
-        personDataReady.value = name to rating
+
+        val addPersonWorkRequest = OneTimeWorkRequestBuilder<AddPersonWorker>()
+            .setInputData(workDataOf(Constants.NAME to name, Constants.RATING to rating))
+            .build()
+        val getPersonsWorkRequest = OneTimeWorkRequestBuilder<GetPersonsWorker>()
+            .build()
+        WorkManager.getInstance()
+            .beginUniqueWork("AddPerson",  ExistingWorkPolicy.REPLACE, addPersonWorkRequest)
+            .then(getPersonsWorkRequest)
+            .enqueue()
+
+       // personDataReady.value = name to rating
     }
 
     fun onPersonSelected(person: Person) {
@@ -78,7 +93,6 @@ class MainViewModel : ViewModel() {
     fun updatePersons() {
         launch {
             val getPersonsWorkRequest = OneTimeWorkRequestBuilder<GetPersonsWorker>()
-                .setInitialDelay(10L, TimeUnit.SECONDS)
                 .build()
             WorkManager.getInstance().enqueue(getPersonsWorkRequest)
 //            personUseCase.getPersons()?.exception?.message?.let {

@@ -28,7 +28,6 @@ class PersonsUseCaseImpl(
     }
 
     override suspend fun getPersons(): Throwable? {
-        delay(1000)
         when(val getPersonsResult = personsCloudRepository.getPersons()) {
             is NetworkResult.Error -> return getPersonsResult.exception
             is NetworkResult.Success -> {

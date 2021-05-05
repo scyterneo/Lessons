@@ -1,6 +1,11 @@
 package com.example.cleanarchitechture.presentation.ui
 
 import android.content.*
+import android.content.Context.SENSOR_SERVICE
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.os.BatteryManager
 import android.os.Bundle
 import android.os.IBinder
@@ -18,12 +23,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.example.cleanarchitechture.Constants
 import com.example.cleanarchitechture.R
 import com.example.cleanarchitechture.domain.entity.Person
-import com.example.cleanarchitechture.presentation.service.AddPersonService
-import com.example.cleanarchitechture.Constants
 import com.example.cleanarchitechture.presentation.adapter.ItemClickListener
 import com.example.cleanarchitechture.presentation.adapter.PersonAdapter
+import com.example.cleanarchitechture.presentation.service.AddPersonService
 import com.example.cleanarchitechture.presentation.service.GetPersonsService
 import com.example.cleanarchitechture.presentation.viewmodel.MainViewModel
 import io.reactivex.Observable
@@ -46,6 +51,9 @@ class MainFragment : Fragment(), ItemClickListener {
     private var allPersonsAdapter = PersonAdapter()
 
     private lateinit var refresher: SwipeRefreshLayout
+
+    private lateinit var sensorManager: SensorManager
+    private var sensorAccelerometer: Sensor? = null
 
     private val disposable: CompositeDisposable = CompositeDisposable()
 
@@ -79,6 +87,13 @@ class MainFragment : Fragment(), ItemClickListener {
     }
     private val personAddedReceiver = PersonAddedReceiver()
 
+    private var accelerometerListener: SensorEventListener = object : SensorEventListener {
+        override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
+        override fun onSensorChanged(event: SensorEvent) {
+            ratingInput.setText(event.values[0].toString())
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -97,12 +112,18 @@ class MainFragment : Fragment(), ItemClickListener {
             batteryLeverBroadcastReceiver,
             IntentFilter(Intent.ACTION_BATTERY_CHANGED)
         )
+        sensorManager.registerListener(
+            accelerometerListener,
+            sensorAccelerometer,
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
     }
 
     override fun onStop() {
         super.onStop()
         requireActivity().unregisterReceiver(personAddedReceiver)
         requireActivity().unregisterReceiver(batteryLeverBroadcastReceiver)
+        sensorManager.unregisterListener(accelerometerListener, sensorAccelerometer)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -141,6 +162,15 @@ class MainFragment : Fragment(), ItemClickListener {
         viewModel.getPersonDataReady().observe(viewLifecycleOwner, {
             startAddPersonProcess(it.first, it.second)
         })
+        sensorManager = requireActivity().getSystemService(SENSOR_SERVICE) as SensorManager
+        sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        val sensors = sensorManager.getSensorList(Sensor.TYPE_ALL)
+        sensors.forEach { sensor ->
+            val sensorInformation = "name = ${sensor.name}, type = ${sensor.type}\nvendor = ${sensor.vendor}" +
+                " ,version = ${sensor.version}\nmax = ${sensor.maximumRange} , power = ${sensor.power}" +
+                ", resolution = ${sensor.resolution}\n--------------------------------------\n"
+            Log.d("Sensor", sensorInformation)
+        }
     }
 
     private fun startAddPersonProcess(name: String, rating: Float) {

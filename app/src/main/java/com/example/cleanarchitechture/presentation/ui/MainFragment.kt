@@ -1,11 +1,17 @@
 package com.example.cleanarchitechture.presentation.ui
 
+import android.Manifest
 import android.content.*
+import android.content.Context.LOCATION_SERVICE
 import android.content.Context.SENSOR_SERVICE
+import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.BatteryManager
 import android.os.Bundle
 import android.os.IBinder
@@ -16,6 +22,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.core.app.JobIntentService
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
@@ -54,6 +61,7 @@ class MainFragment : Fragment(), ItemClickListener {
 
     private lateinit var sensorManager: SensorManager
     private var sensorAccelerometer: Sensor? = null
+    private lateinit var locationManager: LocationManager
 
     private val disposable: CompositeDisposable = CompositeDisposable()
 
@@ -94,6 +102,34 @@ class MainFragment : Fragment(), ItemClickListener {
         }
     }
 
+    private val locationListener: LocationListener = object : LocationListener {
+        override fun onLocationChanged(location: Location) {
+            showLocation(location)
+        }
+
+        override fun onProviderDisabled(provider: String) {}
+
+        override fun onProviderEnabled(provider: String) {
+            if (ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+
+                return
+            }
+            showLocation(locationManager.getLastKnownLocation(provider))
+        }
+
+        override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -116,6 +152,27 @@ class MainFragment : Fragment(), ItemClickListener {
             accelerometerListener,
             sensorAccelerometer,
             SensorManager.SENSOR_DELAY_NORMAL
+        )
+
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            return
+        }
+        locationManager.requestLocationUpdates(
+            LocationManager.GPS_PROVIDER,
+            1000L * 10L, 10F, locationListener
+        )
+        locationManager.requestLocationUpdates(
+            LocationManager.NETWORK_PROVIDER,
+            1000L * 10L, 10F, locationListener
         )
     }
 
@@ -162,15 +219,19 @@ class MainFragment : Fragment(), ItemClickListener {
         viewModel.getPersonDataReady().observe(viewLifecycleOwner, {
             startAddPersonProcess(it.first, it.second)
         })
+
         sensorManager = requireActivity().getSystemService(SENSOR_SERVICE) as SensorManager
         sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         val sensors = sensorManager.getSensorList(Sensor.TYPE_ALL)
         sensors.forEach { sensor ->
-            val sensorInformation = "name = ${sensor.name}, type = ${sensor.type}\nvendor = ${sensor.vendor}" +
-                " ,version = ${sensor.version}\nmax = ${sensor.maximumRange} , power = ${sensor.power}" +
-                ", resolution = ${sensor.resolution}\n--------------------------------------\n"
+            val sensorInformation =
+                "name = ${sensor.name}, type = ${sensor.type}\nvendor = ${sensor.vendor}" +
+                    " ,version = ${sensor.version}\nmax = ${sensor.maximumRange} , power = ${sensor.power}" +
+                    ", resolution = ${sensor.resolution}\n--------------------------------------\n"
             Log.d("Sensor", sensorInformation)
         }
+
+        locationManager = requireActivity().getSystemService(LOCATION_SERVICE) as LocationManager
     }
 
     private fun startAddPersonProcess(name: String, rating: Float) {
@@ -213,6 +274,15 @@ class MainFragment : Fragment(), ItemClickListener {
     override fun onDestroyView() {
         super.onDestroyView()
         allPersonsAdapter.setListener(null)
+    }
+
+    private fun showLocation(location: Location?) {
+        if (location == null) return
+        if (location.provider == LocationManager.GPS_PROVIDER) {
+            nameInput.setText("GPS: ${location.latitude} - ${location.longitude}")
+        } else if (location.provider == LocationManager.NETWORK_PROVIDER) {
+            nameInput.setText("Network: ${location.latitude} - ${location.longitude}")
+        }
     }
 
     inner class BatteryLeverBroadcastReceiver : BroadcastReceiver() {

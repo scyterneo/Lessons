@@ -1,5 +1,5 @@
 package com.example.cleanarchitechture.domain.usecase.person
 
-interface WorkUseCase {
+interface WorkController {
     fun addPerson(name: String, rating: Float)
 }

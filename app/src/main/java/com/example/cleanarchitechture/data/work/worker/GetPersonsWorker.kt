@@ -1,4 +1,4 @@
-package com.example.cleanarchitechture.presentation.worker
+package com.example.cleanarchitechture.data.work.worker
 
 import android.content.Context
 import androidx.work.CoroutineWorker

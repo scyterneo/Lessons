@@ -3,7 +3,11 @@ package com.example.cleanarchitechture
 import androidx.work.WorkManager
 import com.example.cleanarchitechture.data.cloud.CloudSource
 import com.example.cleanarchitechture.data.db.LocalDatabaseSource
-import com.example.cleanarchitechture.domain.usecase.person.*
+import com.example.cleanarchitechture.data.work.WorkControllerImpl
+import com.example.cleanarchitechture.domain.usecase.person.EditPersonUseCase
+import com.example.cleanarchitechture.domain.usecase.person.PersonsUseCase
+import com.example.cleanarchitechture.domain.usecase.person.PersonsUseCaseImpl
+import com.example.cleanarchitechture.domain.usecase.person.WorkController
 
 object Dependencies {
 
@@ -12,11 +16,11 @@ object Dependencies {
     private val workManager: WorkManager by lazy { WorkManager.getInstance(App.instance) }
 
     fun getPersonsUseCase(): PersonsUseCase =
-        PersonsUseCaseImpl(localDatabaseSource, cloudSource)
+        PersonsUseCaseImpl(localDatabaseSource, cloudSource, getWorkController())
 
     fun getEditPersonUseCase(): EditPersonUseCase =
-        PersonsUseCaseImpl(localDatabaseSource, cloudSource)
+        PersonsUseCaseImpl(localDatabaseSource, cloudSource, getWorkController())
 
-    fun getWorkUseCase(): WorkUseCase =
-        WorkUseCaseImpl(workManager)
+    private fun getWorkController(): WorkController =
+        WorkControllerImpl(workManager)
 }

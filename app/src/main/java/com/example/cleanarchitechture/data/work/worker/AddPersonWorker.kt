@@ -1,18 +1,13 @@
-package com.example.cleanarchitechture.presentation.worker
+package com.example.cleanarchitechture.data.work.worker
 
 import android.content.Context
 import android.util.Log
 import androidx.work.CoroutineWorker
-import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.example.cleanarchitechture.Constants
 import com.example.cleanarchitechture.Dependencies
 import com.example.cleanarchitechture.data.cloud.NetworkResult
 import com.example.cleanarchitechture.domain.entity.Person
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 
 class AddPersonWorker(
     context: Context,

@@ -12,13 +12,22 @@ import com.example.cleanarchitechture.domain.usecase.person.EditPersonUseCase
 import com.example.cleanarchitechture.domain.usecase.person.PersonsUseCase
 import com.example.cleanarchitechture.extensions.launch
 import com.example.cleanarchitechture.data.work.worker.GetPersonsWorker
+import com.example.cleanarchitechture.domain.SomeUseCase
+import com.example.cleanarchitechture.domain.SomeUseCaseImpl
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.flow.collect
+import javax.inject.Inject
 
-class MainViewModel : ViewModel() {
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    private val someUseCase: SomeUseCase,
+    private val personUseCase: PersonsUseCase,
+    private val editPersonUseCase: EditPersonUseCase
+) : ViewModel() {
 
-    private val personUseCase: PersonsUseCase by lazy { Dependencies.getPersonsUseCase() }
-    private val editPersonUseCase: EditPersonUseCase by lazy { Dependencies.getEditPersonUseCase() }
+    //private val personUseCase: PersonsUseCase by lazy { Dependencies.getPersonsUseCase() }
+   // private val editPersonUseCase: EditPersonUseCase by lazy { Dependencies.getEditPersonUseCase() }
 
     var name: String = ""
     var rating: String = ""
@@ -46,15 +55,11 @@ class MainViewModel : ViewModel() {
     }
 
     fun addPerson() {
-        val rating = try {
-            this.rating.toFloat()
-        } catch (exception: Exception) {
-            0F
-        }
+        val rating = someUseCase.toFloat(this.rating)
 
-       editPersonUseCase.addPerson(name, rating)
+        editPersonUseCase.addPerson(name, rating)
 
-       // personDataReady.value = name to rating
+        // personDataReady.value = name to rating
     }
 
     fun onPersonSelected(person: Person) {

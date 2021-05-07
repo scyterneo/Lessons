@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import com.example.cleanarchitechture.data.db.dao.PersonDao
 import com.example.cleanarchitechture.domain.entity.Person
 
-@Database(entities = [Person::class], version = 1)
+@Database(entities = [Person::class], version = 2)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun personDao(): PersonDao
 }

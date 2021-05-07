@@ -1,6 +1,7 @@
 package com.example.cleanarchitechture.presentation.ui
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.*
 import android.content.Context.LOCATION_SERVICE
 import android.content.Context.SENSOR_SERVICE
@@ -22,7 +23,6 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
 import androidx.core.app.JobIntentService
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
@@ -33,6 +33,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.cleanarchitechture.Constants
 import com.example.cleanarchitechture.R
 import com.example.cleanarchitechture.domain.entity.Person
+import com.example.cleanarchitechture.extensions.checkPermission
 import com.example.cleanarchitechture.presentation.adapter.ItemClickListener
 import com.example.cleanarchitechture.presentation.adapter.PersonAdapter
 import com.example.cleanarchitechture.presentation.service.AddPersonService
@@ -107,23 +108,14 @@ class MainFragment : Fragment(), ItemClickListener {
             showLocation(location)
         }
 
-        override fun onProviderDisabled(provider: String) {}
-
+        @SuppressLint("MissingPermission")
+        /*  Permission checked in method checkLocationPermissions and requested in requestLocationPermissions */
         override fun onProviderEnabled(provider: String) {
-            if (ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-
-                return
+            if (checkLocationPermissions()) {
+                showLocation(locationManager.getLastKnownLocation(provider))
+            } else {
+                requestLocationPermissions()
             }
-            showLocation(locationManager.getLastKnownLocation(provider))
         }
 
         override fun onStatusChanged(provider: String, status: Int, extras: Bundle) {
@@ -154,25 +146,23 @@ class MainFragment : Fragment(), ItemClickListener {
             SensorManager.SENSOR_DELAY_NORMAL
         )
 
-        if (ActivityCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            return
+        if (checkLocationPermissions()) {
+            startLocationUpdates()
+        } else {
+            requestLocationPermissions()
         }
+    }
+
+    @SuppressLint("MissingPermission")
+    /*  Permission checked should be in method checkLocationPermissions and requested in requestLocationPermissions */
+    private fun startLocationUpdates() {
         locationManager.requestLocationUpdates(
             LocationManager.GPS_PROVIDER,
-            1000L * 10L, 10F, locationListener
+            1000L, 10F, locationListener
         )
         locationManager.requestLocationUpdates(
             LocationManager.NETWORK_PROVIDER,
-            1000L * 10L, 10F, locationListener
+            1000L, 10F, locationListener
         )
     }
 
@@ -274,6 +264,39 @@ class MainFragment : Fragment(), ItemClickListener {
     override fun onDestroyView() {
         super.onDestroyView()
         allPersonsAdapter.setListener(null)
+    }
+
+    private fun checkLocationPermissions(): Boolean {
+        val fineLocationPermission = checkPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+        val coarseLocationPermission = checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+        return fineLocationPermission || coarseLocationPermission
+    }
+
+    private fun requestLocationPermissions() {
+        requestPermissions(
+            arrayOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ),
+            Constants.LOCATION_PERMISSION_REQUEST_CODE
+        )
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == Constants.LOCATION_PERMISSION_REQUEST_CODE) {
+            if (checkLocationPermissions()) {
+                startLocationUpdates()
+            } else {
+                Toast.makeText(
+                    requireContext(), "Location Permission not granted", Toast.LENGTH_LONG
+                )
+                    .show()
+            }
+        }
     }
 
     private fun showLocation(location: Location?) {

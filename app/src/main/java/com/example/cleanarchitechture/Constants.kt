@@ -11,4 +11,5 @@ object Constants {
     const val NOTIFICATION_CHANNEL_ID = "Persons"
 
     const val GET_PERSONS_JOB_ID = 2342
+    const val LOCATION_PERMISSION_REQUEST_CODE = 1298
 }

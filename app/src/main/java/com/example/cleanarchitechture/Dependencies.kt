@@ -15,6 +15,8 @@ object Dependencies {
     private val cloudSource: CloudSource by lazy { CloudSource() }
     private val workManager: WorkManager by lazy { WorkManager.getInstance(App.instance) }
 
+
+
     fun getPersonsUseCase(): PersonsUseCase =
         PersonsUseCaseImpl(localDatabaseSource, cloudSource, getWorkController())
 

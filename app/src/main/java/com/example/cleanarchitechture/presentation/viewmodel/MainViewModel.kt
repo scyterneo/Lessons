@@ -15,10 +15,13 @@ import com.example.cleanarchitechture.data.work.worker.GetPersonsWorker
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.flow.collect
 
-class MainViewModel : ViewModel() {
+class MainViewModel(
+    private val personUseCase: PersonsUseCase,
+    private val editPersonUseCase: EditPersonUseCase
+) : ViewModel() {
 
-    private val personUseCase: PersonsUseCase by lazy { Dependencies.getPersonsUseCase() }
-    private val editPersonUseCase: EditPersonUseCase by lazy { Dependencies.getEditPersonUseCase() }
+    //  private val personUseCase: PersonsUseCase by lazy { Dependencies.getPersonsUseCase() }
+    //private val editPersonUseCase: EditPersonUseCase by lazy { Dependencies.getEditPersonUseCase() }
 
     var name: String = ""
     var rating: String = ""
@@ -52,9 +55,9 @@ class MainViewModel : ViewModel() {
             0F
         }
 
-       editPersonUseCase.addPerson(name, rating)
+        editPersonUseCase.addPerson(name, rating)
 
-       // personDataReady.value = name to rating
+        // personDataReady.value = name to rating
     }
 
     fun onPersonSelected(person: Person) {

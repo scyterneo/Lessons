@@ -10,6 +10,7 @@ class PersonsUseCaseImpl(
     private val personsCloudRepository: PersonsCloudRepository,
     private val workController: WorkController
 ) : PersonsUseCase, EditPersonUseCase {
+
     override fun observePersons(): Flow<List<Person>> =
         personsRepository.observePersons()
 

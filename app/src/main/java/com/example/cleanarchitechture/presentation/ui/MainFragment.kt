@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.content.*
 import android.content.Context.LOCATION_SERVICE
 import android.content.Context.SENSOR_SERVICE
-import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -33,6 +32,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.cleanarchitechture.Constants
 import com.example.cleanarchitechture.R
 import com.example.cleanarchitechture.domain.entity.Person
+import com.example.cleanarchitechture.domain.usecase.person.PersonsCloudRepository
 import com.example.cleanarchitechture.extensions.checkPermission
 import com.example.cleanarchitechture.presentation.adapter.ItemClickListener
 import com.example.cleanarchitechture.presentation.adapter.PersonAdapter
@@ -43,6 +43,7 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import org.koin.android.viewmodel.ext.android.viewModel
 
 
 class MainFragment : Fragment(), ItemClickListener {
@@ -51,7 +52,7 @@ class MainFragment : Fragment(), ItemClickListener {
         fun newInstance() = MainFragment()
     }
 
-    private lateinit var viewModel: MainViewModel
+    private val viewModel: MainViewModel by viewModel()
     private lateinit var nameInput: EditText
     private lateinit var ratingInput: EditText
     private lateinit var addPersonBtn: Button
@@ -175,7 +176,7 @@ class MainFragment : Fragment(), ItemClickListener {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+       // viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
         nameInput.doAfterTextChanged {
             viewModel.name = it.toString()
         }
